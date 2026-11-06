@@ -71,18 +71,20 @@ function update(){
   obs=obs.filter(o=>o.x>-80);coins=coins.filter(k=>k.x>-30&&!k.got);pows=pows.filter(o=>o.x>-40&&!o.got);
   const pb=p.sliding?{x:p.x+2,y:G-20,w:p.w+6,h:18}:{x:p.x+8,y:p.y+6,w:p.w-16,h:p.h-8};
   for(const o of obs){
-    const hb=o.bat?{x:o.x+4,y:G-48,w:o.w-8,h:18}:{x:o.x+5,y:G-o.h+8,w:o.w-10,h:o.h-8};
+    const hb=o.bat?{x:o.x+4,y:G-48,w:o.w-8+speed,h:18}:{x:o.x+5,y:G-o.h+8,w:o.w-10+speed,h:o.h-8};
     if(!o.dead&&hit(pb,hb)){
       if(p.inv>0)continue;
       if(p.shield){o.dead=true;shake=10;sfx.shield();puff(o.x+o.w/2,G-20,26,'#4fc3f7',8)}
       else{die();return}}}
   obs=obs.filter(o=>!o.dead);
-  for(const k of coins)if(hit(pb,{x:k.x-k.r,y:k.y-k.r,w:k.r*2,h:k.r*2})){k.got=true;coinN++;sfx.coin();puff(k.x,k.y,6,'#ffd54f',4)}
-  for(const o of pows)if(hit(pb,{x:o.x-14,y:o.y-14,w:28,h:28})){o.got=true;sfx.pow();puff(o.x,o.y,16,o.type==='shield'?'#4fc3f7':'#c77dff',6);
+  for(const k of coins)if(hit(pb,{x:k.x-k.r,y:k.y-k.r,w:k.r*2+speed,h:k.r*2})){k.got=true;coinN++;sfx.coin();puff(k.x,k.y,6,'#ffd54f',4)}
+  for(const o of pows)if(hit(pb,{x:o.x-14,y:o.y-14,w:28+speed,h:28})){o.got=true;sfx.pow();puff(o.x,o.y,16,o.type==='shield'?'#4fc3f7':'#c77dff',6);
     if(o.type==='shield')p.shield=true;else p.mag=360}
   score++;const nl=1+Math.floor(score_()/250);
   if(nl>lvl){lvl=nl;lvlT=100;sfx.level()}
-  speed=5+Math.min(6,(lvl-1)*.6+score/1500);
+  // speed never stops rising: linear ramp for the first levels, then keeps climbing (log curve) forever
+  const r=(lvl-1)*.6+score/1500;
+  speed=5+(r<=6?r:6+3*Math.log(1+(r-6)/3));
 }
 /* ---------- drawing ---------- */
 function mtn(f,col,base,amp,k){x.fillStyle=col;x.beginPath();x.moveTo(0,G);

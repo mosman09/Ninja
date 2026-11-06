@@ -17,3 +17,6 @@ A 2D endless runner built with HTML, CSS and JavaScript (Canvas).
 
 ## Run locally
 Open `index.html` in a browser, or use the VS Code Live Server extension.
+
+##
+With version the Ninga is Imortal

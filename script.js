@@ -52,7 +52,7 @@ function update(){
   t++;p.vy+=GRAV;p.y=Math.min(G-p.h,p.y+p.vy);
   if(onGround()){if(p.vy>3)puff(p.x+14,G,4,'#b6ffd9',2);p.vy=0;p.jumps=0}
   p.sliding=onGround()&&p.sl>0;if(p.sl>0)p.sl--;
-  if(p.mag>0)p.mag--;if(p.inv>0)p.inv--;
+  if(p.inv>0)p.inv--;
   if(t%6===0&&onGround())puff(p.x+4,G,1,'#b6ffd9',1.5);
   trail.forEach(q=>q.x-=speed*.9);trail.push({x:p.x+14,y:p.y+(p.sliding?G-p.y-14:16)});if(trail.length>16)trail.shift();
   nextObs-=speed;
@@ -66,7 +66,7 @@ function update(){
     nextObs=320+Math.random()*220+speed*14;
   }
   obs.forEach(o=>o.x-=speed);coins.forEach(k=>{k.x-=speed;
-    if(p.mag>0){const dx=p.x+17-k.x,dy=p.y+22-k.y,d=Math.hypot(dx,dy);if(d<190){k.x+=dx/d*9;k.y+=dy/d*9}}});
+    if(p.mag&&k.x<W+20){const dx=p.x+17-k.x,dy=p.y+22-k.y,d=Math.hypot(dx,dy)||1,v=Math.min(d,speed+12);k.x+=dx/d*v;k.y+=dy/d*v}});
   pows.forEach(o=>o.x-=speed);
   obs=obs.filter(o=>o.x>-80);coins=coins.filter(k=>k.x>-30&&!k.got);pows=pows.filter(o=>o.x>-40&&!o.got);
   const pb=p.sliding?{x:p.x+2,y:G-20,w:p.w+6,h:18}:{x:p.x+8,y:p.y+6,w:p.w-16,h:p.h-8};
@@ -79,7 +79,7 @@ function update(){
   obs=obs.filter(o=>!o.dead);
   for(const k of coins)if(hit(pb,{x:k.x-k.r,y:k.y-k.r,w:k.r*2+speed,h:k.r*2})){k.got=true;coinN++;sfx.coin();puff(k.x,k.y,6,'#ffd54f',4)}
   for(const o of pows)if(hit(pb,{x:o.x-14,y:o.y-14,w:28+speed,h:28})){o.got=true;sfx.pow();puff(o.x,o.y,16,o.type==='shield'?'#4fc3f7':'#c77dff',6);
-    if(o.type==='shield')p.shield=true;else p.mag=360}
+    if(o.type==='shield')p.shield=true;else p.mag=1}
   score++;const nl=1+Math.floor(score_()/250);
   if(nl>lvl){lvl=nl;lvlT=100;sfx.level()}
   // speed never stops rising: linear ramp for the first levels, then keeps climbing (log curve) forever
@@ -151,7 +151,7 @@ function hud(){
   x.fillStyle='#ffd54f';x.beginPath();x.arc(W-70,22,9,0,7);x.fill();txt('x'+coinN,W-54,29,20,'#fff');
   txt('LV '+lvl,W-14,54,16,'#d4fff0','right');
   if(p.shield){x.strokeStyle='#4fc3f7';x.lineWidth=3;x.beginPath();x.arc(W-190,22,9,0,7);x.stroke()}
-  if(p.mag>0){x.fillStyle='#c77dff';x.fillRect(W-170,16,p.mag/360*60,10)}
+  if(p.mag){x.strokeStyle='#c77dff';x.lineWidth=3;x.beginPath();x.arc(W-160,22,9,0,7);x.stroke();x.fillStyle='#c77dff';x.font='bold 11px sans-serif';x.textAlign='center';x.fillText('M',W-160,26);x.textAlign='left'}
   if(lvlT>0){lvlT--;x.globalAlpha=Math.min(1,lvlT/40);txt('LEVEL '+lvl,W/2,110,44,'#fff','center');x.globalAlpha=1}
 }
 function overlay(a,b){x.fillStyle='rgba(0,20,18,.6)';x.fillRect(0,0,W,H);txt(a,W/2,150,44,'#fff','center');txt(b,W/2,192,18,'#d4fff0','center');x.textAlign='left'}
